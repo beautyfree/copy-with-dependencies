@@ -116,18 +116,6 @@ jobs:
               'Download the VSIX from this release and install it.',
               '',
               '',
-              '**VS Code**',
-              '',
-              '```shell',
-              'curl -L https://github.com/beautyfree/copy-with-dependencies/releases/download/' +
-                tag +
-                '/copy-deps-extension-' +
-                version +
-                '.vsix -o /tmp/copy-deps-extension.vsix',
-              'code --install-extension /tmp/copy-deps-extension.vsix',
-              '```',
-              '',
-              '',
               '**Cursor**',
               '',
               '```shell',
@@ -137,6 +125,18 @@ jobs:
                 version +
                 '.vsix -o /tmp/copy-deps-extension.vsix',
               'cursor --install-extension /tmp/copy-deps-extension.vsix',
+              '```',
+              '',
+              '',
+              '**VS Code**',
+              '',
+              '```shell',
+              'curl -L https://github.com/beautyfree/copy-with-dependencies/releases/download/' +
+                tag +
+                '/copy-deps-extension-' +
+                version +
+                '.vsix -o /tmp/copy-deps-extension.vsix',
+              'code --install-extension /tmp/copy-deps-extension.vsix',
               '```',
               ''
             ].join('\n');
