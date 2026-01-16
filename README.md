@@ -39,6 +39,21 @@ pnpm i
 pnpm build
 ```
 
+## Release (Marketplace)
+
+Prerequisites:
+- Create a VS Code publisher and a Personal Access Token (PAT).
+- Add `VSCE_PAT` secret in your GitHub repository.
+
+Release options:
+- Tag-based release: push a tag like `v0.0.2` to trigger the workflow.
+- Manual release: run the `Release VS Code Extension` workflow in GitHub Actions.
+
+Local release:
+```bash
+pnpm run publish:patch
+```
+
 ## License
 
 AGPL-3.0-only

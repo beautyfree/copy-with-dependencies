@@ -40,13 +40,19 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run build",
+    "vscode:prepublish": "pnpm run build",
     "build": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "publish": "vsce publish",
+    "publish:patch": "vsce publish patch",
+    "publish:minor": "vsce publish minor",
+    "publish:major": "vsce publish major"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
     "@types/vscode": "^1.74.0",
+    "@vscode/vsce": "^2.26.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {}
