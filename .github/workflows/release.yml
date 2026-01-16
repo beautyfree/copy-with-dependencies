@@ -116,29 +116,37 @@ jobs:
             }
 
             const instructions = [
-              "## Installation (CLI)",
-              "Download the VSIX from this release and install it.",
-              "",
-              "**VS Code**",
-              "`code --install-extension copy-deps-extension-" + version + ".vsix`",
-              "or",
-              "`curl -L https://github.com/beautyfree/copy-with-dependencies/releases/download/" +
+              '## Installation (CLI)',
+              '',
+              'Download the VSIX from this release and install it.',
+              '',
+              '',
+              '**VS Code**',
+              '',
+              '```shell',
+              'curl -L https://github.com/beautyfree/copy-with-dependencies/releases/download/' +
                 tag +
-                "/copy-deps-extension-" +
+                '/copy-deps-extension-' +
                 version +
-                ".vsix -o /tmp/copy-deps-extension.vsix && code --install-extension /tmp/copy-deps-extension.vsix`",
-              "",
-              "**Cursor**",
-              "`cursor --install-extension copy-deps-extension-" + version + ".vsix`",
-              "or",
-              "`curl -L https://github.com/beautyfree/copy-with-dependencies/releases/download/" +
+                '.vsix -o /tmp/copy-deps-extension.vsix',
+              '',
+              'code --install-extension /tmp/copy-deps-extension.vsix',
+              '```',
+              '',
+              '',
+              '**Cursor**',
+              '',
+              '```shell',
+              'curl -L https://github.com/beautyfree/copy-with-dependencies/releases/download/' +
                 tag +
-                "/copy-deps-extension-" +
+                '/copy-deps-extension-' +
                 version +
-                ".vsix -o /tmp/copy-deps-extension.vsix && cursor --install-extension /tmp/copy-deps-extension.vsix`",
-              "",
-              ""
-            ].join("\n");
+                '.vsix -o /tmp/copy-deps-extension.vsix',
+              '',
+              'cursor --install-extension /tmp/copy-deps-extension.vsix',
+              '```',
+              ''
+            ].join('\n');
 
             const newBody = instructions + body;
             await github.rest.repos.updateRelease({
