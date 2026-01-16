@@ -78,8 +78,8 @@ The extension:
 ## Development
 
 ```bash
-pnpm i
-pnpm build
+npm i
+npm build
 ```
 
 ## Release (Marketplace)
@@ -94,7 +94,7 @@ Release options:
 
 Local release:
 ```bash
-pnpm run publish:patch
+npm run publish:patch
 ```
 
 ## License

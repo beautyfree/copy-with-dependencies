@@ -1,5 +1,5 @@
 {
-  "name": "copy-deps-extension",
+  "name": "copy-with-dependencies",
   "displayName": "Copy with Dependencies",
   "description": "Copy code fragments with all their dependencies",
   "version": "0.0.1",
@@ -10,14 +10,12 @@
     "url": "https://github.com/beautyfree/copy-with-dependencies.git"
   },
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.95.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:copyWithDependencies.copy"
-  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -44,7 +42,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run build",
+    "vscode:prepublish": "npm run build",
     "build": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "package": "vsce package",
@@ -54,10 +52,11 @@
     "publish:major": "vsce publish major"
   },
   "devDependencies": {
-    "@types/node": "^18.0.0",
-    "@types/vscode": "^1.74.0",
-    "@vscode/vsce": "^2.26.0",
-    "typescript": "^5.0.0"
+    "@types/node": "20.x",
+    "@types/vscode": "^1.95.0",
+    "@vscode/vsce": "^3.7.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "typescript": "^5.4.5"
+  }
 }
