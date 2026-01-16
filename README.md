@@ -17,6 +17,49 @@ VS Code extension that allows you to copy code fragments along with all their lo
 2. Select "Copy with Dependencies" from the context menu
 3. The code and all its dependencies will be copied to clipboard
 
+## Installation
+
+### From VS Code Marketplace
+
+1. Open VS Code or Cursor
+2. Go to Extensions (Ctrl+Shift+X / Cmd+Shift+X)
+3. Search for "Copy with Dependencies"
+4. Click Install
+
+### From GitHub Release
+
+**Using GUI:**
+
+1. Go to [Releases](https://github.com/beautyfree/copy-with-dependencies/releases)
+2. Download the latest `.vsix` file
+3. Open VS Code or Cursor
+4. Open Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
+5. Run: `Extensions: Install from VSIX...`
+6. Select the downloaded `.vsix` file
+
+**Using Terminal:**
+
+1. Download the latest `.vsix` file from [Releases](https://github.com/beautyfree/copy-with-dependencies/releases)
+
+2. For VS Code:
+   ```bash
+   code --install-extension copy-deps-extension-*.vsix
+   ```
+
+3. For Cursor:
+   ```bash
+   cursor --install-extension copy-deps-extension-*.vsix
+   ```
+
+   Or download and install in one command:
+   ```bash
+   # VS Code
+   curl -L https://github.com/beautyfree/copy-with-dependencies/releases/latest/download/copy-deps-extension-*.vsix -o /tmp/extension.vsix && code --install-extension /tmp/extension.vsix
+   
+   # Cursor
+   curl -L https://github.com/beautyfree/copy-with-dependencies/releases/latest/download/copy-deps-extension-*.vsix -o /tmp/extension.vsix && cursor --install-extension /tmp/extension.vsix
+   ```
+
 ## Supported Languages
 
 - TypeScript (`.ts`, `.tsx`)
