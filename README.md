@@ -1,6 +1,6 @@
 # Copy with Dependencies Extension
 
-VS Code extension that allows you to copy code fragments along with all their local dependencies.
+VS Code extension that allows you to copy code fragments along with all their dependencies.
 
 ## Features
 
