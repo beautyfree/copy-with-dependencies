@@ -40,7 +40,7 @@ jobs:
 
       - name: Read version
         id: read_version
-        run: echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+        run: echo "VERSION=$(node -p 'require(\"./package.json\").version')" >> $GITHUB_OUTPUT
 
       - name: Create tag (workflow_dispatch)
         id: create_tag
