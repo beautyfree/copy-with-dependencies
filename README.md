@@ -35,8 +35,8 @@ The extension:
 ## Development
 
 ```bash
-npm install
-npm run compile
+pnpm i
+pnpm build
 ```
 
 ## License

@@ -1,0 +1,53 @@
+{
+  "name": "copy-deps-extension",
+  "displayName": "Copy with Dependencies",
+  "description": "Copy code fragments with all their dependencies",
+  "version": "0.0.1",
+  "publisher": "devall",
+  "license": "AGPL-3.0-only",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:copyWithDependencies.copy"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copyWithDependencies.copy",
+        "title": "Copy with Dependencies"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "copyWithDependencies.copy",
+          "when": "editorHasSelection || editorTextFocus",
+          "group": "copy"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "copyWithDependencies.copy",
+          "when": "explorerResourceIsFile",
+          "group": "copy"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {}
+}
