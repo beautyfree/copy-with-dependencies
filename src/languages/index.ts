@@ -2,11 +2,11 @@ import { LanguagePlugin } from '../types'
 import { TypeScriptPlugin } from './typescript'
 
 /**
- * Регистрация плагинов языков
+ * Language plugin registration
  */
 const plugins: LanguagePlugin[] = [new TypeScriptPlugin()]
 
-// Регистрируем TypeScript плагин также для JavaScript
+// Register the TypeScript plugin for JavaScript as well
 class JavaScriptPlugin extends TypeScriptPlugin {
   languageId = 'javascript'
 }
@@ -14,7 +14,7 @@ class JavaScriptPlugin extends TypeScriptPlugin {
 plugins.push(new JavaScriptPlugin())
 
 /**
- * Получает плагин для языка по его идентификатору
+ * Gets a plugin by its language identifier
  */
 export function getPluginForLanguage(
   languageId: string
@@ -23,7 +23,7 @@ export function getPluginForLanguage(
 }
 
 /**
- * Получает плагин для файла по его расширению
+ * Gets a plugin for a file by its extension
  */
 export function getPluginForFile(filePath: string): LanguagePlugin | null {
   const ext = filePath.substring(filePath.lastIndexOf('.'))
@@ -31,7 +31,7 @@ export function getPluginForFile(filePath: string): LanguagePlugin | null {
 }
 
 /**
- * Получает все зарегистрированные плагины
+ * Gets all registered plugins
  */
 export function getAllPlugins(): LanguagePlugin[] {
   return [...plugins]

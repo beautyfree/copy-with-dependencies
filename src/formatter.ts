@@ -1,11 +1,11 @@
 import { Dependency, CodeFragment, ResolveResult } from './types'
 
 /**
- * Форматирует результат разрешения зависимостей в читаемый код
+ * Formats the dependency resolution result into readable code
  */
 export class CodeFormatter {
   /**
-   * Форматирует результат в строку для копирования
+   * Formats the result into a string for copying
    */
   format(
     result: ResolveResult,
@@ -14,7 +14,7 @@ export class CodeFormatter {
     const includeComments = options.includeComments !== false
     const lines: string[] = []
 
-    // Добавляем заголовок
+    // Add header
     if (includeComments) {
       lines.push('// ========================================')
       lines.push('// Dependencies')
@@ -22,26 +22,26 @@ export class CodeFormatter {
       lines.push('')
     }
 
-    // Добавляем зависимости
+    // Add dependencies
     const addedFiles = new Set<string>()
     for (const dep of result.dependencies) {
-      // Дедупликация по пути файла
+      // Deduplicate by file path
       if (addedFiles.has(dep.filePath)) {
         continue
       }
       addedFiles.add(dep.filePath)
 
-      // Комментарий с путем файла
+      // Comment with file path
       if (includeComments) {
         lines.push(`// From: ${dep.relativePath}`)
         lines.push('// ---')
       }
 
-      // Содержимое файла
+      // File contents
       const depContent = this.cleanContent(dep.content)
       lines.push(depContent)
 
-      // Разделитель
+      // Separator
       if (includeComments) {
         lines.push('')
         lines.push('// ---')
@@ -51,7 +51,7 @@ export class CodeFormatter {
       }
     }
 
-    // Добавляем целевой фрагмент
+    // Add target fragment
     if (includeComments) {
       lines.push('// ========================================')
       lines.push('// Target Code')
@@ -69,11 +69,11 @@ export class CodeFormatter {
       lines.push('')
     }
 
-    // Содержимое целевого фрагмента
+    // Target fragment contents
     const targetContent = this.cleanContent(result.targetFragment.content)
     lines.push(targetContent)
 
-    // Добавляем ошибки, если есть
+    // Add errors if any
     if (result.errors.length > 0 && includeComments) {
       lines.push('')
       lines.push('// ========================================')
@@ -88,26 +88,26 @@ export class CodeFormatter {
   }
 
   /**
-   * Очищает содержимое от лишних пробелов и форматирует
+   * Cleans content of extra whitespace and normalizes formatting
    */
   private cleanContent(content: string): string {
-    // Убираем лишние пустые строки в начале и конце
+    // Remove extra blank lines at the beginning and end
     let cleaned = content.trim()
 
-    // Нормализуем окончания строк
+    // Normalize line endings
     cleaned = cleaned.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
 
     return cleaned
   }
 
   /**
-   * Форматирует зависимости в более компактном виде
+   * Formats dependencies in a more compact form
    */
   formatCompact(result: ResolveResult): string {
     const lines: string[] = []
     const addedFiles = new Set<string>()
 
-    // Зависимости
+    // Dependencies
     for (const dep of result.dependencies) {
       if (addedFiles.has(dep.filePath)) {
         continue
@@ -119,7 +119,7 @@ export class CodeFormatter {
       lines.push('')
     }
 
-    // Целевой код
+    // Target code
     lines.push(
       `// ${
         result.targetFragment.relativePath || result.targetFragment.filePath

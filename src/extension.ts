@@ -6,7 +6,7 @@ import { getPluginForFile, getPluginForLanguage } from './languages'
 import * as path from 'path'
 
 /**
- * Активирует расширение
+ * Activates the extension
  */
 export function activate(context: vscode.ExtensionContext) {
   console.log('Copy with Dependencies extension is now active')
@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   )
 
-  // Регистрируем команду
+  // Register the command
   const disposable = vscode.commands.registerCommand(
     'copyWithDependencies.copy',
     async () => {
@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 /**
- * Деактивирует расширение
+ * Deactivates the extension
  */
 export function deactivate() {}
 
@@ -86,13 +86,13 @@ async function getSymbolRangeAtPosition(
 }
 
 /**
- * Основная функция копирования с зависимостями
+ * Main function to copy with dependencies
  */
 async function copyWithDependencies(
   lastMouseSelections?: Map<string, vscode.Selection>
 ): Promise<void> {
   try {
-    // Получаем активный редактор
+    // Get the active editor
     const editor = vscode.window.activeTextEditor
     if (!editor) {
       vscode.window.showWarningMessage('No active editor')
@@ -103,14 +103,14 @@ async function copyWithDependencies(
     const filePath = document.uri.fsPath
     const languageId = document.languageId
 
-    // Получаем корень рабочего пространства
+    // Get the workspace root
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
     if (!workspaceRoot) {
       vscode.window.showErrorMessage('No workspace folder found')
       return
     }
 
-    // Получаем плагин для языка
+    // Get a plugin for the language
     const plugin =
       getPluginForLanguage(languageId) || getPluginForFile(filePath)
     if (!plugin) {
@@ -120,7 +120,7 @@ async function copyWithDependencies(
       return
     }
 
-    // Определяем тип выделения и извлекаем фрагмент
+    // Determine selection type and extract fragment
     const selection = editor.selection
     const fileContent = document.getText()
     let fragment: CodeFragment
@@ -151,13 +151,13 @@ async function copyWithDependencies(
     })
 
     if (selection.isEmpty) {
-      // Нет выделения - используем позицию последнего клика мышью, если есть
+      // No selection: use last mouse click position if available
       const mouseSelection =
         lastMouseSelections?.get(document.uri.toString()) || null
       const anchorSelection = mouseSelection || selection
       const anchorPosition = anchorSelection.active
 
-      // 1) Сначала пытаемся получить диапазон символа (функции/класса)
+      // 1) First, try to get the symbol range (function/class)
       const symbolRange = await getSymbolRangeAtPosition(
         document,
         anchorPosition
@@ -166,22 +166,22 @@ async function copyWithDependencies(
       if (symbolRange) {
         fragment = makeRangeFragment(symbolRange, document.getText(symbolRange))
       } else {
-        // 2) Если символ не найден, используем слово под курсором
+        // 2) If no symbol is found, use the word under the cursor
         const wordRange =
           document.getWordRangeAtPosition(anchorPosition) || null
         if (wordRange) {
           fragment = makeRangeFragment(wordRange, document.getText(wordRange))
         } else {
-          // 3) Fallback: весь файл
+          // 3) Fallback: entire file
           fragment = makeFullFileFragment()
         }
       }
     } else {
-      // Есть выделение - пытаемся определить тип
+      // There is a selection: try to determine the type
       const selectedText = document.getText(selection)
       const range = selection
 
-      // Пытаемся извлечь фрагмент через плагин
+      // Try to extract the fragment via the plugin
       const extractedFragment = await plugin.extractFragment(
         document.getText(),
         range,
@@ -189,10 +189,10 @@ async function copyWithDependencies(
       )
 
       if (extractedFragment) {
-        // Проверяем, что извлеченный фрагмент не является всем файлом
+        // Ensure the extracted fragment is not the whole file
         const fragmentContent = extractedFragment.content
 
-        // Если фрагмент занимает больше 80% файла, используем выделенный текст
+        // If the fragment covers more than 80% of the file, use the selected text
         if (fragmentContent.length / fileContent.length > 0.8) {
           fragment = makeRangeFragment(range, selectedText)
         } else {
@@ -203,17 +203,17 @@ async function copyWithDependencies(
           }
         }
       } else {
-        // Fallback: просто выделенный текст
+        // Fallback: plain selected text
         fragment = makeRangeFragment(range, selectedText)
       }
     }
 
-    // Добавляем relativePath к фрагменту
+    // Add relativePath to the fragment
     if (!fragment.relativePath) {
       fragment.relativePath = path.relative(workspaceRoot, fragment.filePath)
     }
 
-    // Показываем прогресс
+    // Show progress
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -221,7 +221,7 @@ async function copyWithDependencies(
         cancellable: false,
       },
       async () => {
-        // Разрешаем зависимости
+        // Resolve dependencies
         const resolver = new DependencyResolver()
         const options: ResolveOptions = {
           workspaceRoot,
@@ -232,16 +232,16 @@ async function copyWithDependencies(
 
         const result = await resolver.resolve(fragment, options)
 
-        // Форматируем результат
+        // Format result
         const formatter = new CodeFormatter()
         const formattedCode = formatter.format(result, {
           includeComments: true,
         })
 
-        // Копируем в буфер обмена
+        // Copy to clipboard
         await vscode.env.clipboard.writeText(formattedCode)
 
-        // Показываем уведомление
+        // Show notification
         const depCount = result.dependencies.length
         const message =
           depCount > 0

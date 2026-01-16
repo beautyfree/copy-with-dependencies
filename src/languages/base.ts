@@ -10,23 +10,23 @@ import * as path from 'path'
 import * as fs from 'fs'
 
 /**
- * Базовый класс для плагинов языков
+ * Base class for language plugins
  */
 export abstract class BaseLanguagePlugin implements LanguagePlugin {
   abstract languageId: string
   abstract fileExtensions: string[]
 
   /**
-   * Проверяет, является ли путь внешней зависимостью
+   * Checks whether the path is an external dependency
    */
   isExternalDependency(importPath: string): boolean {
-    // Проверяем стандартные паттерны внешних зависимостей
+    // Check standard external dependency patterns
     if (!importPath.startsWith('.') && !importPath.startsWith('/')) {
-      // Это может быть npm пакет или абсолютный путь
+      // This can be an npm package or an absolute path
       return true
     }
 
-    // Проверяем на node_modules
+    // Check for node_modules
     if (importPath.includes('node_modules')) {
       return true
     }
@@ -35,14 +35,14 @@ export abstract class BaseLanguagePlugin implements LanguagePlugin {
   }
 
   /**
-   * Разрешает путь импорта к реальному файлу
+   * Resolves an import path to a real file
    */
   protected async resolveImportPath(
     importPath: string,
     fromFile: string,
     workspaceRoot: string
   ): Promise<string | null> {
-    // Если это внешняя зависимость, возвращаем null
+    // If this is an external dependency, return null
     if (this.isExternalDependency(importPath)) {
       return null
     }
@@ -51,14 +51,14 @@ export abstract class BaseLanguagePlugin implements LanguagePlugin {
     let resolvedPath: string
 
     if (importPath.startsWith('/')) {
-      // Абсолютный путь от корня проекта
+      // Absolute path from the project root
       resolvedPath = path.join(workspaceRoot, importPath)
     } else {
-      // Относительный путь
+      // Relative path
       resolvedPath = path.resolve(fromDir, importPath)
     }
 
-    // Пробуем различные расширения
+    // Try different extensions
     const extensions = this.fileExtensions
     for (const ext of extensions) {
       const withExt = resolvedPath + ext
@@ -67,12 +67,12 @@ export abstract class BaseLanguagePlugin implements LanguagePlugin {
       }
     }
 
-    // Пробуем без расширения (если уже есть)
+    // Try without extension (if already present)
     if (fs.existsSync(resolvedPath)) {
       return resolvedPath
     }
 
-    // Пробуем index файл
+    // Try index file
     for (const ext of extensions) {
       const indexPath = path.join(resolvedPath, `index${ext}`)
       if (fs.existsSync(indexPath)) {
@@ -84,7 +84,7 @@ export abstract class BaseLanguagePlugin implements LanguagePlugin {
   }
 
   /**
-   * Читает содержимое файла
+   * Reads file contents
    */
   protected async readFile(filePath: string): Promise<string | null> {
     try {
@@ -95,7 +95,7 @@ export abstract class BaseLanguagePlugin implements LanguagePlugin {
   }
 
   /**
-   * Получает относительный путь от корня проекта
+   * Gets the relative path from the project root
    */
   protected getRelativePath(filePath: string, workspaceRoot: string): string {
     return path.relative(workspaceRoot, filePath)

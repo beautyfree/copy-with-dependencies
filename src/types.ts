@@ -1,16 +1,16 @@
 import * as vscode from 'vscode'
 
 /**
- * Информация о зависимости
+ * Dependency information
  */
 export interface Dependency {
-  /** Путь к файлу зависимости */
+  /** Path to the dependency file */
   filePath: string
-  /** Содержимое файла */
+  /** File contents */
   content: string
-  /** Относительный путь от корня проекта */
+  /** Relative path from the project root */
   relativePath: string
-  /** Тип зависимости (import, type, interface, etc.) */
+  /** Dependency type (import, type, interface, etc.) */
   type:
     | 'import'
     | 'type'
@@ -19,45 +19,45 @@ export interface Dependency {
     | 'function'
     | 'constant'
     | 'enum'
-  /** Имя зависимости */
+  /** Dependency name */
   name?: string
 }
 
 /**
- * Фрагмент кода с метаданными
+ * Code fragment with metadata
  */
 export interface CodeFragment {
-  /** Содержимое кода */
+  /** Code contents */
   content: string
-  /** Путь к исходному файлу */
+  /** Source file path */
   filePath: string
-  /** Относительный путь от корня проекта */
+  /** Relative path from the project root */
   relativePath?: string
-  /** Диапазон строк в исходном файле */
+  /** Line range in the source file */
   range?: vscode.Range
-  /** Тип фрагмента */
+  /** Fragment type */
   type: 'file' | 'class' | 'function' | 'selection' | 'method'
-  /** Язык программирования */
+  /** Programming language */
   language: string
 }
 
 /**
- * Интерфейс плагина языка
+ * Language plugin interface
  */
 export interface LanguagePlugin {
-  /** Идентификатор языка */
+  /** Language identifier */
   languageId: string
 
-  /** Поддерживаемые расширения файлов */
+  /** Supported file extensions */
   fileExtensions: string[]
 
   /**
-   * Парсит импорты из кода
+   * Parses imports from the code
    */
   parseImports(content: string, filePath: string): Promise<ImportInfo[]>
 
   /**
-   * Находит определения зависимостей
+   * Resolves dependency definitions
    */
   resolveDependency(
     importInfo: ImportInfo,
@@ -65,7 +65,7 @@ export interface LanguagePlugin {
   ): Promise<Dependency | null>
 
   /**
-   * Извлекает фрагмент кода (функция, класс и т.д.)
+   * Extracts a code fragment (function, class, etc.)
    */
   extractFragment(
     content: string,
@@ -74,7 +74,7 @@ export interface LanguagePlugin {
   ): Promise<CodeFragment | null>
 
   /**
-   * Извлекает локальные зависимости внутри файла для выбранного фрагмента
+   * Extracts local dependencies within the file for the selected fragment
    */
   extractLocalDependencies?: (
     content: string,
@@ -84,51 +84,51 @@ export interface LanguagePlugin {
   ) => Promise<Dependency[]>
 
   /**
-   * Проверяет, является ли путь внешней зависимостью
+   * Checks whether the path is an external dependency
    */
   isExternalDependency(importPath: string): boolean
 }
 
 /**
- * Информация об импорте
+ * Import information
  */
 export interface ImportInfo {
-  /** Путь импорта */
+  /** Import path */
   path: string
-  /** Импортируемые имена */
+  /** Imported names */
   names: string[]
-  /** Тип импорта */
+  /** Import type */
   type: 'default' | 'named' | 'namespace' | 'type' | 'side-effect'
-  /** Полная строка импорта */
+  /** Full import statement */
   raw: string
-  /** Позиция в коде */
+  /** Position in code */
   position?: { line: number; column: number }
-  /** Файл, из которого идет импорт */
+  /** File where the import originates */
   fromFile?: string
 }
 
 /**
- * Опции разрешения зависимостей
+ * Dependency resolution options
  */
 export interface ResolveOptions {
-  /** Максимальная глубина рекурсии */
+  /** Maximum recursion depth */
   maxDepth?: number
-  /** Включать ли комментарии */
+  /** Whether to include comments */
   includeComments?: boolean
-  /** Включать ли внешние зависимости */
+  /** Whether to include external dependencies */
   includeExternal?: boolean
-  /** Корень рабочего пространства */
+  /** Workspace root */
   workspaceRoot: string
 }
 
 /**
- * Результат разрешения зависимостей
+ * Dependency resolution result
  */
 export interface ResolveResult {
-  /** Список зависимостей в правильном порядке */
+  /** Dependency list in correct order */
   dependencies: Dependency[]
-  /** Целевой фрагмент кода */
+  /** Target code fragment */
   targetFragment: CodeFragment
-  /** Ошибки, возникшие при разрешении */
+  /** Errors encountered during resolution */
   errors: string[]
 }

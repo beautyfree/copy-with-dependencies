@@ -11,7 +11,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 
 /**
- * Движок разрешения зависимостей
+ * Dependency resolution engine
  */
 export class DependencyResolver {
   private visitedFiles = new Set<string>()
@@ -19,13 +19,13 @@ export class DependencyResolver {
   private resolvedDependencies = new Map<string, Dependency>()
 
   /**
-   * Разрешает зависимости для фрагмента кода
+   * Resolves dependencies for a code fragment
    */
   async resolve(
     fragment: CodeFragment,
     options: ResolveOptions
   ): Promise<ResolveResult> {
-    // Сброс состояния
+    // Reset state
     this.visitedFiles.clear()
     this.dependencyGraph.clear()
     this.resolvedDependencies.clear()
@@ -33,7 +33,7 @@ export class DependencyResolver {
     const errors: string[] = []
     const maxDepth = options.maxDepth || 10
 
-    // Получаем плагин для языка
+    // Get plugin for the language
     const plugin =
       getPluginForLanguage(fragment.language) ||
       getPluginForFile(fragment.filePath)
@@ -45,7 +45,7 @@ export class DependencyResolver {
       }
     }
 
-    // Разрешаем зависимости рекурсивно
+    // Resolve dependencies recursively
     await this.resolveDependenciesRecursive(
       fragment.filePath,
       plugin,
@@ -55,10 +55,10 @@ export class DependencyResolver {
       errors
     )
 
-    // Топологическая сортировка зависимостей
+    // Topologically sort dependencies
     const sortedDependencies = this.topologicalSort()
 
-    // Локальные зависимости внутри файла (функции/константы и т.д.)
+    // Local dependencies within the file (functions/constants, etc.)
     let localDependencies: Dependency[] = []
     if (
       fragment.range &&
@@ -86,7 +86,7 @@ export class DependencyResolver {
   }
 
   /**
-   * Рекурсивно разрешает зависимости
+   * Recursively resolves dependencies
    */
   private async resolveDependenciesRecursive(
     filePath: string,
@@ -96,17 +96,17 @@ export class DependencyResolver {
     currentDepth: number,
     errors: string[]
   ): Promise<void> {
-    // Проверка глубины
+    // Depth check
     if (currentDepth >= maxDepth) {
       return
     }
 
-    // Проверка на циклы
+    // Cycle check
     if (this.visitedFiles.has(filePath)) {
       return
     }
 
-    // Читаем файл
+    // Read file
     let content: string
     try {
       content = fs.readFileSync(filePath, 'utf-8')
@@ -117,17 +117,17 @@ export class DependencyResolver {
 
     this.visitedFiles.add(filePath)
 
-    // Парсим импорты
+    // Parse imports
     const imports = await plugin.parseImports(content, filePath)
 
-    // Инициализируем граф зависимостей для этого файла
+    // Initialize dependency graph for this file
     if (!this.dependencyGraph.has(filePath)) {
       this.dependencyGraph.set(filePath, new Set())
     }
 
-    // Разрешаем каждую зависимость
+    // Resolve each dependency
     for (const importInfo of imports) {
-      // Пропускаем внешние зависимости, если не включены
+      // Skip external dependencies when not included
       if (
         !options.includeExternal &&
         plugin.isExternalDependency(importInfo.path)
@@ -135,12 +135,12 @@ export class DependencyResolver {
         continue
       }
 
-      // Устанавливаем fromFile, если не установлен
+      // Set fromFile when not provided
       if (!importInfo.fromFile) {
         importInfo.fromFile = filePath
       }
 
-      // Разрешаем путь импорта
+      // Resolve import path
       const resolvedPath = await this.resolveImportPath(
         importInfo.path,
         filePath,
@@ -152,10 +152,10 @@ export class DependencyResolver {
         continue
       }
 
-      // Добавляем в граф
+      // Add to graph
       this.dependencyGraph.get(filePath)!.add(resolvedPath)
 
-      // Если зависимость еще не разрешена, разрешаем её
+      // Resolve dependency if it has not been resolved yet
       if (!this.resolvedDependencies.has(resolvedPath)) {
         const dependency = await plugin.resolveDependency(
           importInfo,
@@ -164,7 +164,7 @@ export class DependencyResolver {
         if (dependency) {
           this.resolvedDependencies.set(resolvedPath, dependency)
 
-          // Рекурсивно разрешаем зависимости этой зависимости
+          // Recursively resolve this dependency's dependencies
           await this.resolveDependenciesRecursive(
             resolvedPath,
             plugin,
@@ -179,7 +179,7 @@ export class DependencyResolver {
   }
 
   /**
-   * Разрешает путь импорта
+   * Resolves an import path
    */
   private async resolveImportPath(
     importPath: string,
@@ -187,7 +187,7 @@ export class DependencyResolver {
     workspaceRoot: string,
     plugin: any
   ): Promise<string | null> {
-    // Если это внешняя зависимость, возвращаем null
+    // If this is an external dependency, return null
     if (plugin.isExternalDependency(importPath)) {
       return null
     }
@@ -196,14 +196,14 @@ export class DependencyResolver {
     let resolvedPath: string
 
     if (importPath.startsWith('/')) {
-      // Абсолютный путь от корня проекта
+      // Absolute path from the project root
       resolvedPath = path.join(workspaceRoot, importPath)
     } else {
-      // Относительный путь
+      // Relative path
       resolvedPath = path.resolve(fromDir, importPath)
     }
 
-    // Пробуем различные расширения
+    // Try different extensions
     const extensions = plugin.fileExtensions
     for (const ext of extensions) {
       const withExt = resolvedPath + ext
@@ -212,12 +212,12 @@ export class DependencyResolver {
       }
     }
 
-    // Пробуем без расширения (если уже есть)
+    // Try without extension (if already present)
     if (fs.existsSync(resolvedPath)) {
       return resolvedPath
     }
 
-    // Пробуем index файл
+    // Try index file
     for (const ext of extensions) {
       const indexPath = path.join(resolvedPath, `index${ext}`)
       if (fs.existsSync(indexPath)) {
@@ -229,17 +229,17 @@ export class DependencyResolver {
   }
 
   /**
-   * Топологическая сортировка зависимостей
+   * Topological sort of dependencies
    */
   private topologicalSort(): Dependency[] {
     const sorted: Dependency[] = []
     const visited = new Set<string>()
     const visiting = new Set<string>()
 
-    // Функция для обхода в глубину
+    // Helper for depth-first traversal
     const visit = (filePath: string): void => {
       if (visiting.has(filePath)) {
-        // Обнаружен цикл, пропускаем
+        // Cycle detected, skip
         return
       }
 
@@ -249,7 +249,7 @@ export class DependencyResolver {
 
       visiting.add(filePath)
 
-      // Посещаем зависимости
+      // Visit dependencies
       const deps = this.dependencyGraph.get(filePath)
       if (deps) {
         for (const dep of deps) {
@@ -260,21 +260,21 @@ export class DependencyResolver {
       visiting.delete(filePath)
       visited.add(filePath)
 
-      // Добавляем зависимость в результат
+      // Add dependency to results
       const dependency = this.resolvedDependencies.get(filePath)
       if (dependency) {
         sorted.push(dependency)
       }
     }
 
-    // Обходим все файлы
+    // Traverse all files
     for (const filePath of this.dependencyGraph.keys()) {
       if (!visited.has(filePath)) {
         visit(filePath)
       }
     }
 
-    // Добавляем зависимости, которые не были в графе (листовые узлы)
+    // Add dependencies not present in the graph (leaf nodes)
     for (const [filePath, dependency] of this.resolvedDependencies.entries()) {
       if (!visited.has(filePath)) {
         sorted.push(dependency)

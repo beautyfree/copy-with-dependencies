@@ -4,14 +4,14 @@ import { ImportInfo, Dependency, CodeFragment } from '../types'
 import * as ts from 'typescript'
 
 /**
- * Плагин для TypeScript и JavaScript
+ * Plugin for TypeScript and JavaScript
  */
 export class TypeScriptPlugin extends BaseLanguagePlugin {
   languageId = 'typescript'
   fileExtensions = ['.ts', '.tsx', '.js', '.jsx']
 
   /**
-   * Парсит импорты из кода
+   * Parses imports from code
    */
   async parseImports(content: string, filePath: string): Promise<ImportInfo[]> {
     const imports: ImportInfo[] = []
@@ -28,7 +28,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
       )
 
       const visit = (node: ts.Node): void => {
-        // Обрабатываем import statements
+        // Handle import statements
         if (ts.isImportDeclaration(node)) {
           const moduleSpecifier = node.moduleSpecifier
           if (ts.isStringLiteral(moduleSpecifier)) {
@@ -36,7 +36,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
             const specifiers = node.importClause
 
             if (!specifiers) {
-              // Side-effect импорт
+              // Side-effect import
               imports.push({
                 path: source,
                 names: [],
@@ -115,7 +115,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
           }
         }
 
-        // Обрабатываем require()
+        // Handle require()
         if (ts.isVariableStatement(node)) {
           for (const declaration of node.declarationList.declarations) {
             if (
@@ -159,7 +159,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
 
       visit(sourceFile)
     } catch (error) {
-      // Если парсинг не удался, возвращаем пустой массив
+      // If parsing fails, return an empty array
       console.error('Error parsing imports:', error)
     }
 
@@ -167,7 +167,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
   }
 
   /**
-   * Разрешает зависимость
+   * Resolves a dependency
    */
   async resolveDependency(
     importInfo: ImportInfo,
@@ -199,7 +199,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
   }
 
   /**
-   * Извлекает фрагмент кода
+   * Extracts a code fragment
    */
   async extractFragment(
     content: string,
@@ -215,8 +215,8 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
         ts.ScriptKind.TS
       )
 
-      // Вычисляем смещения используя позиции из документа
-      // TypeScript использует 0-based индексы для строк
+      // Compute offsets using document positions
+      // TypeScript uses 0-based line indices
       let startPos: number
       let endPos: number
 
@@ -230,11 +230,11 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
           range.end.character
         )
       } catch (error) {
-        // Fallback: вычисляем вручную
+        // Fallback: compute manually
         const lines = content.split('\n')
         startPos = 0
         for (let i = 0; i < range.start.line && i < lines.length; i++) {
-          startPos += lines[i].length + 1 // +1 для \n
+          startPos += lines[i].length + 1 // +1 for \n
         }
         startPos += range.start.character
 
@@ -245,13 +245,13 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
         endPos += range.end.character
       }
 
-      // Убеждаемся, что позиции в пределах файла
+      // Ensure positions are within the file
       startPos = Math.max(0, Math.min(startPos, content.length))
       endPos = Math.max(startPos, Math.min(endPos, content.length))
 
       let targetNode: ts.Node | null = null
 
-      // Функция для проверки, является ли узел объявлением верхнего уровня
+      // Helper to check whether a node is a top-level declaration
       const isTopLevelDeclaration = (node: ts.Node): boolean => {
         return (
           ts.isFunctionDeclaration(node) ||
@@ -264,7 +264,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
         )
       }
 
-      // Функция для проверки, является ли узел объявлением (включая методы)
+      // Helper to check whether a node is a declaration (including methods)
       const isDeclaration = (node: ts.Node): boolean => {
         return (
           isTopLevelDeclaration(node) ||
@@ -276,37 +276,37 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
         )
       }
 
-      // Рекурсивно собираем все объявления, которые содержат выделение
+      // Recursively collect declarations that contain the selection
       const candidates: ts.Node[] = []
 
       const collectContainingDeclarations = (node: ts.Node): void => {
         const nodeStart = node.getStart()
         const nodeEnd = node.getEnd()
 
-        // Если узел не содержит выделение, пропускаем его и всех детей
+        // If the node doesn't contain the selection, skip it and its children
         if (nodeStart > endPos || nodeEnd < startPos) {
           return
         }
 
-        // Если узел полностью содержит выделение
+        // If the node fully contains the selection
         if (nodeStart <= startPos && nodeEnd >= endPos) {
-          // Если это объявление, добавляем в кандидаты
+          // If it's a declaration, add it to candidates
           if (isDeclaration(node)) {
             candidates.push(node)
           }
 
-          // Продолжаем поиск в дочерних узлах для более специфичных совпадений
+          // Continue searching child nodes for more specific matches
           ts.forEachChild(node, collectContainingDeclarations)
         } else {
-          // Если узел частично пересекается, ищем в дочерних узлах
+          // If the node partially overlaps, search in child nodes
           ts.forEachChild(node, collectContainingDeclarations)
         }
       }
 
-      // Собираем все кандидаты
+      // Collect all candidates
       ts.forEachChild(sourceFile, collectContainingDeclarations)
 
-      // Выбираем самый маленький узел (самый специфичный)
+      // Choose the smallest node (most specific)
       if (candidates.length > 0) {
         candidates.sort((a, b) => {
           const sizeA = a.getEnd() - a.getStart()
@@ -314,7 +314,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
           return sizeA - sizeB
         })
 
-        // Берем первый подходящий узел, исключая SourceFile
+        // Take the first suitable node, excluding SourceFile
         const first = candidates.find((node) => node !== sourceFile) || null
         targetNode = first
       }
@@ -324,12 +324,12 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
         const nodeStart = node.getStart()
         const nodeEnd = node.getEnd()
 
-        // Проверяем, что это не сам SourceFile
+        // Ensure this is not SourceFile itself
         if (
           node === sourceFile ||
           (node.getStart() === 0 && node.getEnd() >= content.length - 1)
         ) {
-          // Это весь файл, используем fallback
+          // This is the whole file, use fallback
           const lines = content.split('\n')
           const startLine = range.start.line
           const endLine = range.end.line
@@ -344,9 +344,9 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
           }
         }
 
-        // Проверяем, что это действительно объявление (функция, класс и т.д.)
+        // Ensure this is actually a declaration (function, class, etc.)
         if (!isDeclaration(node)) {
-          // Если это не объявление, используем fallback
+          // If this is not a declaration, use fallback
           const lines = content.split('\n')
           const startLine = range.start.line
           const endLine = range.end.line
@@ -361,15 +361,15 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
           }
         }
 
-        // Проверяем, что мы не возвращаем весь файл
-        // Если узел занимает больше 80% файла, это скорее всего весь файл
+        // Ensure we are not returning the whole file
+        // If the node takes more than 80% of the file, it is likely the whole file
         const fileSize = content.length
         const nodeSize = nodeEnd - nodeStart
         const nodeRatio = nodeSize / fileSize
 
-        // Если узел слишком большой (больше 80% файла), используем fallback
+        // If the node is too large (>80% of the file), use fallback
         if (nodeRatio > 0.8) {
-          // Fallback: возвращаем выделенный текст
+          // Fallback: return selected text
           const lines = content.split('\n')
           const startLine = range.start.line
           const endLine = range.end.line
@@ -394,7 +394,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
         }
       }
 
-      // Fallback: возвращаем выделенный текст
+      // Fallback: return selected text
       const lines = content.split('\n')
       const startLine = range.start.line
       const endLine = range.end.line
@@ -408,7 +408,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
         language: 'typescript',
       }
     } catch (error) {
-      // Fallback: возвращаем выделенный текст
+      // Fallback: return selected text
       const lines = content.split('\n')
       const startLine = range.start.line
       const endLine = range.end.line
@@ -425,7 +425,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
   }
 
   /**
-   * Извлекает локальные зависимости внутри файла для выбранного фрагмента
+   * Extracts local dependencies within the file for the selected fragment
    */
   async extractLocalDependencies(
     content: string,
@@ -620,7 +620,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
       )
     }
 
-    // Начальные зависимости из фрагмента
+    // Initial dependencies from the fragment
     collectIdentifiersInSpan(
       sourceFile,
       startPos,
@@ -645,7 +645,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
       return null
     }
 
-    // Если выбранная сущность — функция/класс, добавляем зависимости из её употреблений
+    // If the selected entity is a function/class, add dependencies from its usages
     const targetDeclarationName = findTargetDeclarationName()
     if (targetDeclarationName) {
       const getEnclosingStatement = (node: ts.Node): ts.Statement | null => {
@@ -669,7 +669,7 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
             const stmtStart = statement.getStart()
             const stmtEnd = statement.getEnd()
             if (stmtEnd < startPos || stmtStart > endPos) {
-              // Собираем идентификаторы из statement, кроме самого target
+              // Collect identifiers from the statement except the target itself
               const addIdentifiers = (n: ts.Node) => {
                 if (ts.isIdentifier(n)) {
                   if (n.text === targetDeclarationName) {
@@ -767,20 +767,20 @@ export class TypeScriptPlugin extends BaseLanguagePlugin {
   }
 
   /**
-   * Вычисляет смещение в тексте по строке и колонке
-   * @deprecated Используйте getPositionOfLineAndCharacter из sourceFile
+   * Computes the text offset by line and column
+   * @deprecated Use getPositionOfLineAndCharacter from sourceFile
    */
   private getOffset(content: string, line: number, character: number): number {
     const lines = content.split('\n')
     let offset = 0
     for (let i = 0; i < line && i < lines.length; i++) {
-      offset += lines[i].length + 1 // +1 для символа новой строки
+      offset += lines[i].length + 1 // +1 for the newline character
     }
     return offset + character
   }
 
   /**
-   * Определяет тип узла AST
+   * Determines the AST node type
    */
   private getNodeType(
     node: ts.Node,
